@@ -8,19 +8,13 @@ program
   .option('-c, --cylinders', 'show cylinders count')
   .option('-m, --mpg <number>', 'filter: mpg below specified value');
 
-program.configureOutput({
-  writeErr: (str) => {
-    if (str.includes("option '-i, --input <path>' argument missing")) {
-      process.stdout.write("Please, specify input file\n");
-    } else {
-      process.stdout.write(str);
-    }
-    process.exit(1);
-  }
-});
-
 program.parse(process.argv);
 const options = program.opts();
+
+if (!options.input) {
+  console.error("Please, specify input file");
+  process.exit(1);
+}
 
 if (!fs.existsSync(options.input)) {
   console.error("Cannot find input file");
@@ -39,16 +33,22 @@ try {
 
   const resultLines = filteredData.map(car => {
     let line = car.model;
-    if (options.cylinders) line += ` ${car.cyl}`;
+    if (options.cylinders) {
+      line += ` ${car.cyl}`;
+    }
     line += ` ${car.mpg}`;
     return line;
   });
 
   const finalResult = resultLines.join('\n');
 
-  if (options.display) console.log(finalResult);
-  if (options.output) fs.writeFileSync(options.output, finalResult, 'utf-8');
+  if (options.display) {
+    console.log(finalResult);
+  }
 
+  if (options.output) {
+    fs.writeFileSync(options.output, finalResult, 'utf-8');
+  }
 } catch (err) {
   process.exit(1);
 }
